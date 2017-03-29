@@ -23,19 +23,29 @@ class Vect {
 };
 
 int main(int argc, char *argv[]) {
-	if(argc != 4) {
+	if(argc != 8) {
 		printf("Collatz Conjecture Visualizer\n");
-		printf("Usage: ./collatz <limit> <angle> <step>\n");
+		printf("Usage: ./collatz <limit> <angle left> <angle right> <step>\n");
 		printf(" | <limit> - the top number to visualize\n");
-		printf(" | <angle> - angle per each iteration\n");
-		printf(" | <step>  - step per each iteration");
+		printf(" | <angle left> - angle per each iteration when turning left\n");
+		printf(" | <angle right> - angle per each iteration when turning right\n");
+		printf(" | <step left> - step per each iteration when turning left\n");
+		printf(" | <step right> - step per each iteration when turning right\n");
+		printf(" | <thickness inner> - thickes of the inner line\n");
+		printf(" | <thickness outer> - thickes of the whole line\n");
 		return 1;
 	}
 	
 	
 	int limit = atoi(argv[1]);
-	double angleChange = atof(argv[2]);
-	double step = atof(argv[3]);
+	double angleLeft = atof(argv[2]);
+	double angleRight = atof(argv[3]);
+	double stepLeft = atof(argv[4]);
+	double stepRight = atof(argv[5]);
+	int thicknessInner = atoi(argv[6]);
+	int thicknessOuter = atoi(argv[7]);
+	printf("DEBUG: limit=%d angleLeft=%f angleRight=%f stepLeft=%f stepRight=%fi thicknessInner=%d thicknessOuter=%d\n",
+		limit, angleLeft, angleRight, stepLeft, stepRight, thicknessInner, thicknessOuter);
 
 	vector<int> jumps(limit+1, 0);
 	for(vector<int>::iterator i = jumps.begin(); i != jumps.end(); i++) {
@@ -86,10 +96,10 @@ int main(int argc, char *argv[]) {
 	for(vector<vector<int>*>::reverse_iterator i = paths.rbegin(); i != paths.rend(); i++) {
 		physicalPaths.push_back(new vector<Vect*>);
 		physicalPaths.back()->push_back(new Vect(0, 0, M_PI));
-		for(vector<int>::reverse_iterator j = (*i)->rbegin() + 1; j != (*i)->rend(); j++) {
+		for(vector<int>::reverse_iterator j = (*i)->rbegin() + 1; j != (*i)->rend() + 1; j++) {
 			printf("%d ", *j);
 			Vect *newVect;
-			newVect = physicalPaths.back()->back()->getNewNext(step, ((*j)%2?-1:1)*angleChange);
+			newVect = physicalPaths.back()->back()->getNewNext((*j)%2?stepLeft:stepRight, (*j)%2?angleLeft:angleRight);
 			physicalPaths.back()->push_back(newVect);
 		}
 		printf("\n");
@@ -98,16 +108,27 @@ int main(int argc, char *argv[]) {
 	FILE *fp;
 	fp = fopen("cmd.sh", "w");
 	fprintf(fp, "#!/bin/bash\n");
-	fprintf(fp, "c1=#45961b\n");
-	fprintf(fp, "c2=#67bf39\n");
-	fprintf(fp, "convert -size %dx%d xc:white \\\n", imgSize, imgSize);
+	fprintf(fp, "c1=white\n");
+	//fprintf(fp, "c1=#45961b\n");
+	fprintf(fp, "c2=black\n");
+	//fprintf(fp, "c2=#67bf39\n");
+	fprintf(fp, "convert -size %dx%d xc:$c2 \\\n", imgSize, imgSize);
 
 	for(vector<vector<Vect*>*>::iterator i = physicalPaths.begin(); i != physicalPaths.end(); i++) {
-		fprintf(fp, "\t-fill none -stroke black -draw \"polyline");
+		string points;
 		for(vector<Vect*>::iterator j = (*i)->begin(); j != (*i)->end(); j++) {
-			fprintf(fp, " %d,%d", imgSize/2+(int)round((*j)->x), imgSize/2+(int)round((*j)->y));
+			points += " " + to_string(imgSize/2+(int)round((*j)->x)) + "," + to_string(imgSize/2+(int)round((*j)->y));
 		}
-		fprintf(fp, "\" \\\n");
+		int lastX = imgSize/2+(int)round((*i)->back()->x);
+		int lastY = imgSize/2+(int)round((*i)->back()->y);
+		fprintf(fp, "\t-fill none -stroke $c1 -strokewidth %d -draw \"stroke-linecap round polyline%s\" \\\n",
+			thicknessOuter, points.c_str());
+		fprintf(fp, "\t-fill $c1 -stroke none -draw \"circle %d,%d %d,%d\" \\\n",
+			lastX, lastY, lastX, lastY + thicknessOuter/2);
+		fprintf(fp, "\t-fill none -stroke $c2 -strokewidth %d -draw \"stroke-linecap round polyline%s\" \\\n",
+			thicknessInner, points.c_str());
+		fprintf(fp, "\t-fill $c2 -stroke none -draw \"circle %d,%d %d,%d\" \\\n",
+			lastX, lastY, lastX, lastY + thicknessInner/2);
 	}
 	fprintf(fp, "\tout.png");
 	fclose(fp);

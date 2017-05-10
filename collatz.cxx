@@ -130,7 +130,7 @@ int main(int argc, char *argv[]) {
 	FILE *fp;
 	fp = fopen("./generated/cmd.sh", "w");
 	fprintf(fp, "#!/bin/bash\n");
-	fprintf(fp, "c0=white\n");
+	fprintf(fp, "c0=none\n");
 	fprintf(fp, "c1=#45961b\n");
 	fprintf(fp, "c2=#67bf39\n");
 	fprintf(fp, "convert -size %dx%d xc:$c0 \\\n", imgSize, imgSize);
@@ -151,7 +151,8 @@ int main(int argc, char *argv[]) {
 		fprintf(fp, "\t-fill $c2 -stroke none -draw \"circle %d,%d %d,%d\" \\\n",
 			lastX, lastY, lastX, lastY + thicknessInner/2);
 	}
-	fprintf(fp, "\t-trim -matte -fill none -draw 'color 0,0 replace' \\\n");
+	//fprintf(fp, "\t-trim -matte -fill none -draw 'color 0,0 replace' \\\n");
+	fprintf(fp, "\t-trim \\\n");
 	fprintf(fp, "\t./generated/out.png");
 	fclose(fp);
 

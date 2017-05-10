@@ -128,7 +128,7 @@ int main(int argc, char *argv[]) {
 	printf("DEBUG: Preparing ImageMagick script\n");
 	int imgSize = 2200;
 	FILE *fp;
-	fp = fopen("cmd.sh", "w");
+	fp = fopen("generated/cmd.sh", "w");
 	fprintf(fp, "#!/bin/bash\n");
 	fprintf(fp, "c0=white\n");
 	fprintf(fp, "c1=#45961b\n");
@@ -152,7 +152,7 @@ int main(int argc, char *argv[]) {
 			lastX, lastY, lastX, lastY + thicknessInner/2);
 	}
 	fprintf(fp, "\t-trim -matte -fill none -draw 'color 0,0 replace' \\\n");
-	fprintf(fp, "\tout.png");
+	fprintf(fp, "\tgenerated/out.png");
 	fclose(fp);
 
 	//-fill none -stroke $c1 -strokewidth 20 -draw "stroke-linecap round bezier $points" \

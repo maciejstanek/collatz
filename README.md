@@ -5,3 +5,11 @@ This project is all about reproducing somthing similar to the visualization of t
 
 ![Alt](https://github.com/maciejstanek/collatz/raw/master/.scratch/example_output.png)
 
+Usage
+-----
+
+```
+make
+./collatz 8000 0.85 -0.35 5 30 16 20
+eog out.png
+```
